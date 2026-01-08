@@ -10,7 +10,7 @@ from clip_interrogator import Config, Interrogator
 
 batchsize = 128
 df_final = pd.DataFrame()
-annotations = pickle.load(open("/kaggle/input/annotations_public.pkl", 'rb'))
+annotations = pickle.load(open("/kaggle/input/coool-dataset/annotations_public.pkl", 'rb'))
 video_track_id = pickle.load(open("video_track_id.pkl", 'rb'))
 video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", 'rb'))
 
@@ -32,7 +32,7 @@ def clean_text(text):
 
 for video in tqdm(sorted(annotations.keys())[120:]):
     try:
-        video_stream = cv2.VideoCapture(f"/kaggle/input/COOOL-videos/{video}.mp4")
+        video_stream = cv2.VideoCapture(f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4")
         
         num_frames = len(annotations[video].keys())
         batch_id = []

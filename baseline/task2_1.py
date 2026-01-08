@@ -38,7 +38,7 @@ def imagenet_map(x):
 
 ids = []
 df_final = pd.DataFrame()
-annotations = pickle.load(open("/kaggle/input/annotations_public.pkl", 'rb'))
+annotations = pickle.load(open("/kaggle/input/coool-dataset/annotations_public.pkl", 'rb'))
 processor = AutoImageProcessor.from_pretrained("microsoft/swinv2-base-patch4-window16-256")
 model = AutoModelForImageClassification.from_pretrained("microsoft/swinv2-base-patch4-window16-256").to("cuda", dtype=torch.float16)
 
@@ -52,7 +52,7 @@ weight = np.array([ 0.05, 1.0, 0.04, 0.5, 1.0,  0.04 , 0.67, -0.9])
 
 for video in tqdm(sorted(list(annotations.keys()))):
     try:
-        video_stream = cv2.VideoCapture(f"/kaggle/input/COOOL-videos/{video}.mp4")
+        video_stream = cv2.VideoCapture(f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4")
         
         challenge_object_frames = {}
         challenge_object_labels = {}
