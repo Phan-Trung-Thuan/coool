@@ -14,11 +14,11 @@ annotations = pickle.load(open("/kaggle/input/annotations_public.pkl", 'rb'))
 video_track_id = pickle.load(open("video_track_id.pkl", 'rb'))
 video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", 'rb'))
 
-processor = Blip2Processor.from_pretrained("Salesforce/blip2-flan-t5-xxl", use_fast=False)
-model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-xxl", load_in_4bit=True)
+processor = Blip2Processor.from_pretrained("Salesforce/blip-image-captioning-large", use_fast=False)
+model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large", load_in_4bit=True)
 
-# hazard_name_by_id = {}
-hazard_name_by_id = pickle.load(open("hazard_name_by_id_blip2flan.pkl", "rb"))
+hazard_name_by_id = {}
+# hazard_name_by_id = pickle.load(open("hazard_name_by_id_final.pkl", "rb"))
 def clean_text(text):
     text = text.replace("car view of ", "").replace(",", "").split()
     i = 1
@@ -69,5 +69,5 @@ for video in tqdm(sorted(annotations.keys())[120:]):
         print(e)
         continue
 
-with open('hazard_name_by_id_blip2flan.pkl', 'wb') as handle:
+with open('hazard_name_by_id_blip.pkl', 'wb') as handle:
     pickle.dump(hazard_name_by_id, handle, protocol=pickle.HIGHEST_PROTOCOL)
