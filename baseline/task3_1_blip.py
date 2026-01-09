@@ -8,7 +8,7 @@ from tqdm import *
 from transformers import Blip2Processor, Blip2ForConditionalGeneration, BlipProcessor, BlipForConditionalGeneration, VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
 from clip_interrogator import Config, Interrogator
 
-batchsize = 512
+batchsize = 256
 df_final = pd.DataFrame()
 annotations = pickle.load(open("/kaggle/input/coool-dataset/annotations_public.pkl", 'rb'))
 video_track_id = pickle.load(open("video_track_id.pkl", 'rb'))
@@ -30,7 +30,7 @@ def clean_text(text):
     text[0] = text[0][0].upper() + text[0][1:]
     return " ".join(text)
 
-for video in tqdm(sorted(annotations.keys())[120:]):
+for video in tqdm(sorted(annotations.keys())):
     try:
         video_stream = cv2.VideoCapture(f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4")
         

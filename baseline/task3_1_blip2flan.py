@@ -8,7 +8,7 @@ from tqdm import *
 from transformers import Blip2Processor, Blip2ForConditionalGeneration, BlipProcessor, BlipForConditionalGeneration, VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
 from clip_interrogator import Config, Interrogator
 
-batchsize = 128
+batchsize = 84
 df_final = pd.DataFrame()
 annotations = pickle.load(open("/kaggle/input/coool-dataset/annotations_public.pkl", 'rb'))
 video_track_id = pickle.load(open("video_track_id.pkl", 'rb'))
