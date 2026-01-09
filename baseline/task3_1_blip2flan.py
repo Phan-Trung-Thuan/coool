@@ -55,6 +55,7 @@ for video in tqdm(sorted(annotations.keys())):
                 inputs = processor(batch_image, ["car view of"]*len(batch_image), return_tensors="pt").to("cuda", torch.float16)
                 output = model.generate(**inputs, max_length=64)
                 output_text = [clean_text(processor.decode(output[i], skip_special_tokens=True)) for i in range(len(batch_id))]
+                print(output_text[0])
     
                 for track_id, image, text in zip(batch_id, batch_image, output_text):
                     if text not in hazard_name_by_id[video][track_id]:
