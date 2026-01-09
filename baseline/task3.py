@@ -54,7 +54,7 @@ def clean_text(text):
 # =========================
 # MAIN LOOP
 # =========================
-for video in tqdm(sorted(annotations.keys())):
+for video in tqdm(sorted(annotations.keys())[:100]):
     try:
         video_stream = cv2.VideoCapture(
             f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4"
