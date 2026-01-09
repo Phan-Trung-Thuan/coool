@@ -17,8 +17,8 @@ video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", 'rb'))
 processor = Blip2Processor.from_pretrained("Salesforce/blip2-flan-t5-xxl", use_fast=False)
 model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-xxl", load_in_4bit=True)
 
-# hazard_name_by_id = {}
-hazard_name_by_id = pickle.load(open("hazard_name_by_id_blip2flan.pkl", "rb"))
+hazard_name_by_id = {}
+# hazard_name_by_id = pickle.load(open("hazard_name_by_id_blip2flan.pkl", "rb"))
 def clean_text(text):
     text = text.replace("car view of ", "").replace(",", "").split()
     i = 1
@@ -30,7 +30,7 @@ def clean_text(text):
     text[0] = text[0][0].upper() + text[0][1:]
     return " ".join(text)
 
-for video in tqdm(sorted(annotations.keys())[120:]):
+for video in tqdm(sorted(annotations.keys())):
     try:
         video_stream = cv2.VideoCapture(f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4")
         
