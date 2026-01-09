@@ -77,7 +77,7 @@ def infer_hazard(image):
     with torch.no_grad():
         output = model.generate(
             **inputs,
-            max_new_tokens=8,
+            max_new_tokens=64,
             do_sample=False
         )
 
