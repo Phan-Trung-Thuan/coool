@@ -158,11 +158,8 @@ for video in tqdm(sorted(annotations.keys())):
             if ((len(batch_id) >= BATCHSIZE) or (frame_idx == num_frames - 1)) and batch_id:
                 for tid, img in zip(batch_id, batch_img_id):
                     pv = preprocess_image(img)
-                    txt = model.chat(tokenizer, pv, PROMPT, {
-                        "max_new_tokens": 64, 
-                        "eos_token_id": [151645, 151643]
-                      }
-                    )
+                    generation_config = dict(max_new_tokens=64, do_sample=True, eos_token_id=151645,pad_token_id=151645)
+                    txt = model.chat(tokenizer, pv, PROMPT, generation_config)
                     txt = clean_text(txt)
 
                     area = img.shape[0] * img.shape[1]
@@ -186,11 +183,8 @@ for video in tqdm(sorted(annotations.keys())):
             if ((len(batch_img_frame) >= BATCHSIZE) or (frame_idx == num_frames - 1)) and batch_img_frame:
                 for img in batch_img_frame:
                     pv = preprocess_image(img)
-                    txt = model.chat(tokenizer, pv, PROMPT, {
-                        "max_new_tokens": 64, 
-                        "eos_token_id": [151645, 151643]
-                      }
-                    )
+                    generation_config = dict(max_new_tokens=64, do_sample=True, eos_token_id=151645,pad_token_id=151645)
+                    txt = model.chat(tokenizer, pv, PROMPT, generation_config)
                     txt = clean_text(txt)
 
                     hazard_name_by_frame[video][txt] = (
