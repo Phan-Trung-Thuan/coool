@@ -9,7 +9,8 @@ from collections import defaultdict
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
-    BitsAndBytesConfig
+    BitsAndBytesConfig,
+    GenerationConfig
 )
 
 # =========================
@@ -67,15 +68,19 @@ def infer_batch(images):
     return: list of caption strings
     """
     results = []
+    gen_cfg = GenerationConfig(
+        max_new_tokens=64,
+        do_sample=False,
+        temperature=0.0
+    )
 
     for img in images:
         response = model.chat(
             tokenizer,
-            PROMPT,     # query (positional)
-            img,        # image (positional)
+            PROMPT,      # query
+            img,         # image (positional)
             history=None,
-            max_new_tokens=64,
-            do_sample=False
+            generation_config=gen_cfg
         )
 
         results.append(response.strip())
