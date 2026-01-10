@@ -172,7 +172,8 @@ hazard_name_by_frame = {}
 # MAIN LOOP
 # ======================================================
 for video in tqdm(sorted(annotations.keys())):
-    try:
+    # try:
+    if True:
         cap = cv2.VideoCapture(f"{VIDEO_DIR}/{video}.mp4")
         num_frames = len(annotations[video])
 
@@ -265,9 +266,9 @@ for video in tqdm(sorted(annotations.keys())):
                 hazard_name_by_id[video][tid]
             )
 
-    except Exception as e:
-        print(f"Error at {video}: {e}")
-        continue
+    # except Exception as e:
+    #     print(f"Error at {video}: {e}")
+    #     continue
 
 # ======================================================
 # SAVE
