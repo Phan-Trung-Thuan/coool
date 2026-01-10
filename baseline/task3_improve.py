@@ -1,37 +1,45 @@
+# ======================================================
+# TASK 3 – FAST & STABLE VERSION (BLIP2 STYLE)
+# ======================================================
+
 import cv2
 import torch
 import pickle
 import numpy as np
 
 from tqdm import tqdm
+from collections import defaultdict
 from PIL import Image
 
 import torchvision.transforms as T
 from torchvision.transforms.functional import InterpolationMode
 
 from transformers import AutoTokenizer, AutoModel, BitsAndBytesConfig
+import clip
 
-# =========================
+# ======================================================
 # CONFIG
-# =========================
-BATCHSIZE = 128
-DEVICE = "cuda"
-
+# ======================================================
 ANNOT_PATH = "/kaggle/input/coool-dataset/annotations_public.pkl"
 VIDEO_DIR  = "/kaggle/input/coool-dataset/COOOL-videos"
 
 MODEL_NAME = "OpenGVLab/InternVL3_5-8B"
+DEVICE = "cuda"
 
-# =========================
+BATCHSIZE = 64
+MAX_NEW_TOKENS = 64
+TOPK_SYNONYM = 8
+
+# ======================================================
 # LOAD DATA
-# =========================
+# ======================================================
 annotations = pickle.load(open(ANNOT_PATH, "rb"))
 video_track_id = pickle.load(open("video_track_id.pkl", "rb"))
 video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", "rb"))
 
-# =========================
-# LOAD INTERNVL (SAFE CONFIG)
-# =========================
+# ======================================================
+# LOAD INTERNVL (FAST, STABLE)
+# ======================================================
 bnb_cfg = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
@@ -53,22 +61,28 @@ model = AutoModel.from_pretrained(
     use_flash_attn=False
 ).eval()
 
-# =========================
-# PROMPT (BLIP2-LIKE)
-# =========================
-PROMPT = "<image>\ncar view of"
+# ======================================================
+# LOAD CLIP (SYNONYM MERGE)
+# ======================================================
+clip_model, _ = clip.load("ViT-B/32", device=DEVICE)
+clip_model.eval()
+
+# ======================================================
+# PROMPT (MATCH BLIP2 DISTRIBUTION)
+# ======================================================
+PROMPT = "<image>\nDescribe the dangerous object in front of the car using short phrases."
 
 GEN_CFG = dict(
-    max_new_tokens=64,
+    max_new_tokens=MAX_NEW_TOKENS,
     do_sample=False,
     temperature=0.0,
     eos_token_id=151645,
     pad_token_id=151645
 )
 
-# =========================
-# IMAGE PREPROCESS (SIMPLE, FAST)
-# =========================
+# ======================================================
+# IMAGE PREPROCESS
+# ======================================================
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD  = (0.229, 0.224, 0.225)
 
@@ -82,30 +96,81 @@ def preprocess_batch(img_list):
     imgs = [transform(Image.fromarray(img)) for img in img_list]
     return torch.stack(imgs).to(torch.float16).cuda(non_blocking=True)
 
-# =========================
-# TEXT CLEAN (GIỮ NGUYÊN BLIP2)
-# =========================
+# ======================================================
+# UTILS
+# ======================================================
 def clean_text(text):
-    text = text.replace("car view of ", "").replace(",", "").split()
-    i = 1
-    while i < len(text):
-        if text[i] == text[i - 1] or text[i] == "":
-            text.pop(i)
-        else:
-            i += 1
+    text = text.replace(",", "").strip()
     if len(text) > 0:
-        text[0] = text[0][0].upper() + text[0][1:]
-    return " ".join(text)
+        text = text[0].upper() + text[1:]
+    return text
 
-# =========================
+def motion_weight(area, prev_area, frame_gap, tau=6.0, gamma=12.0):
+    if prev_area is None:
+        return 1.0
+    growth = max((area - prev_area) / (prev_area + 1e-6), 0)
+    ttc = 1.0 / (growth + 1e-3)
+    w = np.exp(-ttc / tau) * np.exp(-frame_gap / gamma)
+    return float(np.clip(w, 0.2, 3.0))
+
+@torch.no_grad()
+def internvl_batch_caption(pixel_values, prompt):
+    B = pixel_values.size(0)
+    input_ids = tokenizer(
+        [prompt] * B,
+        return_tensors="pt",
+        padding=True
+    ).input_ids.cuda()
+
+    outputs = model.generate(
+        pixel_values=pixel_values,
+        input_ids=input_ids,
+        **GEN_CFG
+    )
+
+    texts = tokenizer.batch_decode(
+        outputs[:, input_ids.shape[1]:],
+        skip_special_tokens=True
+    )
+    return [clean_text(t) for t in texts]
+
+@torch.no_grad()
+def merge_synonyms_fast(score_dict, topk=TOPK_SYNONYM, thresh=0.85):
+    if len(score_dict) <= 1:
+        return score_dict
+
+    items = sorted(score_dict.items(), key=lambda x: -x[1])[:topk]
+    keys = [k for k,_ in items]
+    scores = np.array([v for _,v in items])
+
+    tokens = clip.tokenize(keys).to(DEVICE)
+    emb = clip_model.encode_text(tokens)
+    emb = emb / emb.norm(dim=-1, keepdim=True)
+    emb = emb.cpu().numpy()
+
+    merged = {}
+    used = set()
+    for i,k in enumerate(keys):
+        if i in used:
+            continue
+        total = scores[i]
+        used.add(i)
+        for j in range(i+1, len(keys)):
+            if j not in used and emb[i] @ emb[j] > thresh:
+                total += scores[j]
+                used.add(j)
+        merged[k] = float(total)
+    return merged
+
+# ======================================================
 # OUTPUT
-# =========================
+# ======================================================
 hazard_name_by_id = {}
 hazard_name_by_frame = {}
 
-# =========================
-# MAIN LOOP (BLIP2 STRUCTURE)
-# =========================
+# ======================================================
+# MAIN LOOP
+# ======================================================
 for video in tqdm(sorted(annotations.keys())):
     try:
         cap = cv2.VideoCapture(f"{VIDEO_DIR}/{video}.mp4")
@@ -114,9 +179,11 @@ for video in tqdm(sorted(annotations.keys())):
         hazard_name_by_id.setdefault(video, {})
         hazard_name_by_frame.setdefault(video, {})
 
-        # buffers (GIỐNG BLIP2)
-        batch_id, batch_img_id = [], []
-        batch_img_frame = []
+        prev_area = {}
+        prev_frame = {}
+        frame_caption_cache = {}
+
+        batch_imgs, batch_tids, batch_areas, batch_weights = [], [], [], []
 
         for frame_idx in sorted(annotations[video].keys()):
             ret, frame = cap.read()
@@ -124,7 +191,7 @@ for video in tqdm(sorted(annotations.keys())):
                 continue
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            has_hazard_in_frame = False
+            has_hazard = False
 
             for obj in annotations[video][frame_idx]["challenge_object"]:
                 tid = obj["track_id"]
@@ -139,66 +206,76 @@ for video in tqdm(sorted(annotations.keys())):
                 if crop.size == 0:
                     continue
 
-                batch_id.append(tid)
-                batch_img_id.append(crop)
-
+                has_hazard = True
                 hazard_name_by_id[video].setdefault(tid, {})
-                has_hazard_in_frame = True
 
-            if has_hazard_in_frame:
-                batch_img_frame.append(frame)
+                area = crop.shape[0] * crop.shape[1]
+                w = motion_weight(
+                    area,
+                    prev_area.get(tid),
+                    frame_idx - prev_frame.get(tid, frame_idx)
+                )
 
-            # -------- TASK 3.1 (OBJECT LEVEL) --------
-            if ((len(batch_img_id) >= BATCHSIZE) or
-                (frame_idx == num_frames - 1 and len(batch_img_id) > 0)):
+                batch_imgs.append(crop)
+                batch_tids.append(tid)
+                batch_areas.append(area)
+                batch_weights.append(w)
 
-                pv = preprocess_batch(batch_img_id)
-                texts = [
-                    clean_text(
-                        model.chat(tokenizer, pv[i:i+1], PROMPT, GEN_CFG)
-                    )
-                    for i in range(len(batch_img_id))
-                ]
+                prev_area[tid] = area
+                prev_frame[tid] = frame_idx
 
-                for tid, img, txt in zip(batch_id, batch_img_id, texts):
+            # ---------- OBJECT LEVEL BATCH ----------
+            if len(batch_imgs) >= BATCHSIZE:
+                pv = preprocess_batch(batch_imgs)
+                texts = internvl_batch_caption(pv, PROMPT)
+
+                for tid, txt, area, w in zip(batch_tids, texts, batch_areas, batch_weights):
                     hazard_name_by_id[video][tid][txt] = (
                         hazard_name_by_id[video][tid].get(txt, 0.0)
-                        + img.shape[0] * img.shape[1]
+                        + area * w
                     )
 
-                batch_id, batch_img_id = [], []
+                batch_imgs, batch_tids, batch_areas, batch_weights = [], [], [], []
 
-            # -------- TASK 3.2 (FRAME LEVEL) --------
-            if ((len(batch_img_frame) >= BATCHSIZE) or
-                (frame_idx == num_frames - 1 and len(batch_img_frame) > 0)):
+            # ---------- FRAME LEVEL ----------
+            if has_hazard:
+                if frame_idx not in frame_caption_cache:
+                    pv = preprocess_batch([frame])
+                    frame_caption_cache[frame_idx] = internvl_batch_caption(pv, PROMPT)[0]
 
-                pv = preprocess_batch(batch_img_frame)
-                texts = [
-                    clean_text(
-                        model.chat(tokenizer, pv[i:i+1], PROMPT, GEN_CFG)
-                    )
-                    for i in range(len(batch_img_frame))
-                ]
+                txt = frame_caption_cache[frame_idx]
+                hazard_name_by_frame[video][txt] = (
+                    hazard_name_by_frame[video].get(txt, 0.0)
+                    + frame.shape[0] * frame.shape[1]
+                )
 
-                for img, txt in zip(batch_img_frame, texts):
-                    hazard_name_by_frame[video][txt] = (
-                        hazard_name_by_frame[video].get(txt, 0.0)
-                        + img.shape[0] * img.shape[1]
-                    )
+        # ---------- FLUSH ----------
+        if len(batch_imgs) > 0:
+            pv = preprocess_batch(batch_imgs)
+            texts = internvl_batch_caption(pv, PROMPT)
+            for tid, txt, area, w in zip(batch_tids, texts, batch_areas, batch_weights):
+                hazard_name_by_id[video][tid][txt] = (
+                    hazard_name_by_id[video][tid].get(txt, 0.0)
+                    + area * w
+                )
 
-                batch_img_frame = []
+        # ---------- MERGE SYNONYMS ----------
+        for tid in hazard_name_by_id[video]:
+            hazard_name_by_id[video][tid] = merge_synonyms_fast(
+                hazard_name_by_id[video][tid]
+            )
 
     except Exception as e:
         print(f"Error at {video}: {e}")
         continue
 
-# =========================
-# SAVE (UNCHANGED)
-# =========================
+# ======================================================
+# SAVE
+# ======================================================
 with open("hazard_name_by_id.pkl", "wb") as f:
     pickle.dump(hazard_name_by_id, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 with open("hazard_name_by_frame.pkl", "wb") as f:
     pickle.dump(hazard_name_by_frame, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-print("✅ Task 3 InternVL (BLIP2-structure) finished")
+print("✅ TASK 3 FAST VERSION FINISHED")
