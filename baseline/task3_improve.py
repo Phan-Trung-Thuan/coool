@@ -62,7 +62,7 @@ transform = T.Compose([
 
 def preprocess_image(np_img):
     img = Image.fromarray(np_img)
-    return transform(img).unsqueeze(0).to(torch.bfloat16).cuda()
+    return transform(img).unsqueeze(0).to(torch.float16).cuda()
 
 def clean_text(text):
     text = text.replace(",", "").strip()
