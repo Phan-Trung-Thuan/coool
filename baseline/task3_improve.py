@@ -19,6 +19,7 @@ video_track_id = pickle.load(open("video_track_id.pkl", "rb"))
 video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", "rb"))
 
 MODEL_NAME = "OpenGVLab/InternVL3_5-8B"
+BATCHSIZE = 64
 
 bnb_cfg = BitsAndBytesConfig(
     load_in_4bit=True,
