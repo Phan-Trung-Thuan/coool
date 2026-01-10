@@ -19,7 +19,7 @@ video_track_id = pickle.load(open("video_track_id.pkl", "rb"))
 video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", "rb"))
 
 MODEL_NAME = "OpenGVLab/InternVL3_5-8B"
-BATCHSIZE = 64
+BATCHSIZE = 128
 
 bnb_cfg = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -108,7 +108,7 @@ def merge_synonyms(score_dict, thresh=0.85):
 hazard_name_by_id = {}
 hazard_name_by_frame = {}
 
-for video in tqdm(sorted(annotations.keys())):
+for video in tqdm(sorted(annotations.keys())[:100]):
     try:
         video_stream = cv2.VideoCapture(
             f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4"
