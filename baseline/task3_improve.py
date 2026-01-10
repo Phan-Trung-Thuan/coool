@@ -108,7 +108,7 @@ def merge_synonyms(score_dict, thresh=0.85):
 hazard_name_by_id = {}
 hazard_name_by_frame = {}
 
-for video in tqdm(sorted(annotations.keys())[100:]):
+for video in tqdm(sorted(annotations.keys())[:2]):
     try:
         video_stream = cv2.VideoCapture(
             f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4"
