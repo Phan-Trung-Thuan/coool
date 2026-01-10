@@ -15,10 +15,14 @@ import pickle
 # with open("hazard_name_by_frame.pkl", "wb") as f:
 #     pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-file_path = 'coool/hazard_name_by_id.pkl'
-df = pd.read_pickle(file_path)
-print(df['video_0002'])
+# file_path = 'coool/hazard_name_by_frame.pkl'
+# df = pd.read_pickle(file_path)
+# print(df['video_0001'])
 
-file_path = 'coool/baseline/hazard_name_by_id.pkl'
+# file_path = 'coool/baseline/hazard_name_by_frame.pkl'
+# df = pd.read_pickle(file_path)
+# print(df['video_0001'])
+
+file_path = 'coool\\baseline\\video_track_id.pkl'
 df = pd.read_pickle(file_path)
-print(df['video_0002'])
+print(df['video_0001'])
