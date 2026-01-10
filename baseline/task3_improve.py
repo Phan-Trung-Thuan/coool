@@ -151,7 +151,7 @@ hazard_name_by_frame = {}
 # =========================
 # MAIN LOOP (FAST)
 # =========================
-for video in tqdm(sorted(annotations.keys())):
+for video in tqdm(sorted(annotations.keys())[:2]):
     try:
         cap = cv2.VideoCapture(f"{VIDEO_DIR}/{video}.mp4")
         num_frames = len(annotations[video])
