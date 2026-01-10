@@ -1,4 +1,5 @@
 import cv2
+from sympy import true
 import torch
 import pickle
 import numpy as np
@@ -78,7 +79,8 @@ def infer_batch(images):
 # MAIN LOOP
 # =========================
 for video in tqdm(sorted(annotations.keys())):
-    try:
+    # try:
+    if True:
         cap = cv2.VideoCapture(f"{VIDEO_DIR}/{video}.mp4")
         num_frames = len(annotations[video])
 
@@ -159,9 +161,9 @@ for video in tqdm(sorted(annotations.keys())):
 
                 batch_frame_imgs = []
 
-    except Exception as e:
-        print(f"Error at {video}: {e}")
-        continue
+    # except Exception as e:
+    #     print(f"Error at {video}: {e}")
+    #     continue
 
 # =========================
 # SAVE (UNCHANGED)
