@@ -71,12 +71,13 @@ def infer_batch(images):
     for img in images:
         response = model.chat(
             tokenizer,
-            image=img,
-            query=PROMPT,
+            PROMPT,     # query (positional)
+            img,        # image (positional)
             history=None,
-            do_sample=False,
-            max_new_tokens=64
+            max_new_tokens=64,
+            do_sample=False
         )
+
         results.append(response.strip())
 
     return results
