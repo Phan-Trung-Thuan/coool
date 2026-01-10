@@ -68,9 +68,7 @@ clip_model.eval()
 # =========================
 PROMPT = (
     "<image>\n"
-    "Describe the dangerous object in front of the car. "
-    "Use a short phrase like 'A cat crossing the road', "
-    "'Moose running across the road', 'Dog on road'."
+    "Describe the dangerous object in front of the car using short phrases."
 )
 
 GEN_CFG = dict(
@@ -151,7 +149,7 @@ hazard_name_by_frame = {}
 # =========================
 # MAIN LOOP (FAST)
 # =========================
-for video in tqdm(sorted(annotations.keys())[:2]):
+for video in tqdm(sorted(annotations.keys())):
     try:
         cap = cv2.VideoCapture(f"{VIDEO_DIR}/{video}.mp4")
         num_frames = len(annotations[video])

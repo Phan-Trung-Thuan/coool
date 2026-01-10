@@ -15,10 +15,10 @@ import pickle
 # with open("hazard_name_by_frame.pkl", "wb") as f:
 #     pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-file_path = 'coool/baseline/hazard_name_by_id.pkl'
-# file_path = 'coool/baseline/hazard_name_by_id_blip2opt.pkl'
+file_path = 'coool/hazard_name_by_id.pkl'
 df = pd.read_pickle(file_path)
+print(df['video_0002'])
 
-import json
-with open("data.json", "w") as json_file:
-    json.dump(df, json_file, indent=4)
+file_path = 'coool/baseline/hazard_name_by_id.pkl'
+df = pd.read_pickle(file_path)
+print(df['video_0002'])
