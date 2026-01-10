@@ -62,22 +62,25 @@ PROMPT = (
 )
 
 def infer_batch(images):
-    prompts = ["<image>\n" + PROMPT] * len(images)
-    inputs = tokenizer(prompts, return_tensors="pt", padding=True).to(DEVICE)
+    """
+    images: list of numpy RGB images
+    return: list of caption strings
+    """
+    results = []
 
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=64,
-            do_sample=False
+    for img in images:
+        response = model.chat(
+            tokenizer,
+            image=img,
+            query=PROMPT,
+            history=None,
+            do_sample=False,
+            max_new_tokens=64
         )
+        results.append(response.strip())
 
-    texts = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-    return [t.strip() for t in texts]
+    return results
 
-# =========================
-# MAIN LOOP
-# =========================
 for video in tqdm(sorted(annotations.keys())):
     # try:
     if True:
