@@ -36,7 +36,7 @@ def clean_text(text):
     text[0] = text[0][0].upper() + text[0][1:]
     return " ".join(text)
 
-for video in tqdm(sorted(annotations.keys())[100:]):
+for video in tqdm(sorted(annotations.keys())):
     try:
         video_stream = cv2.VideoCapture(
             f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4"
@@ -133,8 +133,8 @@ for video in tqdm(sorted(annotations.keys())[100:]):
         print(f"Error at {video}: {e}")
         continue
 
-with open("hazard_name_by_id_2.pkl", "wb") as f:
+with open("hazard_name_by_id.pkl", "wb") as f:
     pickle.dump(hazard_name_by_id, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-with open("hazard_name_by_frame_2.pkl", "wb") as f:
+with open("hazard_name_by_frame.pkl", "wb") as f:
     pickle.dump(hazard_name_by_frame, f, protocol=pickle.HIGHEST_PROTOCOL)
