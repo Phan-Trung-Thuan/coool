@@ -17,13 +17,13 @@ task1 = pickle.load(open("video_Driver_State_Changed.pkl", "rb"))
 task2_1 = pickle.load(open("video_track_id.pkl", "rb"))
 task2_2 = pickle.load(open("video_track_id_tree.pkl", "rb"))
 task3s = [
-    pickle.load(open("hazard_name_by_id_blip2opt.pkl", "rb")),
+    pickle.load(open("hazard_name_by_id.pkl", "rb")),
     # pickle.load(open("hazard_name_by_id_blip2flan.pkl", "rb")),
     # pickle.load(open("hazard_name_by_id_blip.pkl", "rb")),
     # pickle.load(open("hazard_name_by_id_vit.pkl", "rb")),
     # pickle.load(open("../v1/hazard_name_by_id.pkl", "rb")),
          ]
-task3_frame = pickle.load(open("hazard_name_by_frame_blip2opt.pkl", "rb"))
+task3_frame = pickle.load(open("hazard_name_by_frame.pkl", "rb"))
 # task3_frame = pickle.load(open("../v1/hazard_name_by_frame.pkl", "rb"))
 task3 = {}
 # w = np.array([1.26830, 0.03213, 0.01384, 0.00016])
