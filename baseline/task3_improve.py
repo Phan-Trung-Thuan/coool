@@ -109,7 +109,9 @@ def internvl_caption(img_np, prompt):
             question,
             generation_config=dict(
                 max_new_tokens=64,
-                do_sample=False
+                do_sample=False,
+                eos_token_id=151645,
+                pad_token_id=151645,
             )
         )
     return clean_text(response)
