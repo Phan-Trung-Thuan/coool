@@ -17,14 +17,14 @@ task1 = pickle.load(open("video_Driver_State_Changed.pkl", "rb"))
 task2_1 = pickle.load(open("video_track_id.pkl", "rb"))
 task2_2 = pickle.load(open("video_track_id_tree.pkl", "rb"))
 task3s = [
-    # pickle.load(open("hazard_name_by_id_blip2opt.pkl", "rb")),
+    pickle.load(open("hazard_name_by_id_blip2opt.pkl", "rb")),
     # pickle.load(open("hazard_name_by_id_blip2flan.pkl", "rb")),
     # pickle.load(open("hazard_name_by_id_blip.pkl", "rb")),
     # pickle.load(open("hazard_name_by_id_vit.pkl", "rb")),
-    pickle.load(open("../v1/hazard_name_by_id.pkl", "rb")),
+    # pickle.load(open("../v1/hazard_name_by_id.pkl", "rb")),
          ]
-# task3_frame = pickle.load(open("hazard_name_by_frame_blip2opt.pkl", "rb"))
-task3_frame = pickle.load(open("../v1/hazard_name_by_frame.pkl", "rb"))
+task3_frame = pickle.load(open("hazard_name_by_frame_blip2opt.pkl", "rb"))
+# task3_frame = pickle.load(open("../v1/hazard_name_by_frame.pkl", "rb"))
 task3 = {}
 # w = np.array([1.26830, 0.03213, 0.01384, 0.00016])
 w = np.array([1.26830])
@@ -61,6 +61,9 @@ for i in range(len(task3s)):
 
 for video in tqdm(sorted(list(annotations.keys()))):
     task3[video] = mix(task3[video], task3_frame[video])
+
+print(task3['video_0001'])
+print(task3_frame['video_0001'])
 
 remove = ["a", "the", "street", "walking", "on", "and", "with", "in", "of", "blurry", "road", "crossing", "background", "sitting", "foreground", "photo", "image", "running", "line", "down", "highway", "up", "front", "rain", "across", "driving", "at", "daytime", "night", "standing", "air", "through", "pickup", "day", "has", "roof", "driveway", "ford", "explorer", "her", "covered", "snow", "snowy", "water", "small", "sky", "over", "flying", "ha", "posing", "poses", 
           "cross", "is", "ground", "parking", "parked", "s", "out", "from", "by", "it", "other", "riding", "laptop", "computer", "keyboard", "television", "window", "lamp", "its", "his", "new", "picture", "city", "dmax", "bathroom", "king", "moon", "ufo", "suspect", "shirt", "object", "st", "johns", "logo", "thomas", "edward", "hitting", "mirror", "doing", "hazard", "dashcam", "shows", "this", "that", "middle", "presence", "which", "no", "haz", "there", "lot", "large", 
