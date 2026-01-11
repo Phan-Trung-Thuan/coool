@@ -23,7 +23,7 @@ import pickle
 # df = pd.read_pickle(file_path)
 # print(df['video_0001'])
 
-file_path = 'coool\\v1\\hazard_name_by_frame.pkl'
+file_path = 'coool\\baseline\\hazard_name_by_id.pkl'
 df = pd.read_pickle(file_path)
 print(df['video_0001'])
 print(df['video_0002'])
