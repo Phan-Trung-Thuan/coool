@@ -3,16 +3,21 @@ import os
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 import torch
+from tqdm import tqdm
+import pickle
 
 model_path = "OpenGVLab/VideoChat-R1_5"
 # default: Load the model on the available device(s)
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     model_path, torch_dtype="auto", device_map="auto",
-    attn_implementation="flash_attention_2"
 )
 
 # default processer
 processor = AutoProcessor.from_pretrained(model_path)
+
+annotations = pickle.load(open("/kaggle/input/coool-dataset/annotations_public.pkl", "rb"))
+video_track_id = pickle.load(open("video_track_id.pkl", "rb"))
+video_track_id_tree = pickle.load(open("video_track_id_tree.pkl", "rb"))
 
 def draw_track_bbox_video(
     video_path,
@@ -132,3 +137,6 @@ for video in tqdm(sorted(annotations.keys())):
 
     except Exception as e:
         print(f"Error {video}: {e}")
+
+with open("hazard_caption_by_id.pkl", "wb") as f:
+    pickle.dump(hazard_caption_by_id, f, protocol=pickle.HIGHEST_PROTOCOL)
