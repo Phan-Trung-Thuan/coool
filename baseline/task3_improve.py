@@ -70,7 +70,7 @@ def internvl_caption(images, prompt):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=32,
+            max_new_tokens=64,
             do_sample=False
         )
 
@@ -78,7 +78,7 @@ def internvl_caption(images, prompt):
     return [clean_text(t) for t in texts]
 
 # ================= MAIN LOOP =================
-for video in tqdm(sorted(annotations.keys())):
+for video in tqdm(sorted(annotations.keys())[:2]):
     try:
         cap = cv2.VideoCapture(
             f"/kaggle/input/coool-dataset/COOOL-videos/{video}.mp4"
@@ -125,7 +125,7 @@ for video in tqdm(sorted(annotations.keys())):
             if len(batch_crops) >= BATCHSIZE:
                 captions = internvl_caption(
                     batch_crops,
-                    "Describe the hazard object in front of the vehicle."
+                    "Describe the hazard object in front of the vehicle in short phrases."
                 )
 
                 for tid, img, txt in zip(batch_ids, batch_crops, captions):
@@ -138,7 +138,7 @@ for video in tqdm(sorted(annotations.keys())):
             if len(batch_frames) >= BATCHSIZE:
                 captions = internvl_caption(
                     batch_frames,
-                    "Describe the main traffic hazard visible in this driving scene."
+                    "Describe the main traffic hazard visible in this driving scene in short phrases."
                 )
 
                 for img, txt in zip(batch_frames, captions):
