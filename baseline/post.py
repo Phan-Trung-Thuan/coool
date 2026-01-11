@@ -62,9 +62,6 @@ for i in range(len(task3s)):
 for video in tqdm(sorted(list(annotations.keys()))):
     task3[video] = mix(task3[video], task3_frame[video])
 
-print(task3['video_0001'])
-print(task3_frame['video_0001'])
-
 remove = ["a", "the", "street", "walking", "on", "and", "with", "in", "of", "blurry", "road", "crossing", "background", "sitting", "foreground", "photo", "image", "running", "line", "down", "highway", "up", "front", "rain", "across", "driving", "at", "daytime", "night", "standing", "air", "through", "pickup", "day", "has", "roof", "driveway", "ford", "explorer", "her", "covered", "snow", "snowy", "water", "small", "sky", "over", "flying", "ha", "posing", "poses", 
           "cross", "is", "ground", "parking", "parked", "s", "out", "from", "by", "it", "other", "riding", "laptop", "computer", "keyboard", "television", "window", "lamp", "its", "his", "new", "picture", "city", "dmax", "bathroom", "king", "moon", "ufo", "suspect", "shirt", "object", "st", "johns", "logo", "thomas", "edward", "hitting", "mirror", "doing", "hazard", "dashcam", "shows", "this", "that", "middle", "presence", "which", "no", "haz", "there", "lot", "large", 
           "car", "drivers", "toyota", "yaris", "sidewalk", "mazda", 
@@ -179,6 +176,6 @@ for i in range(23):
     
 for i in range(23):
     df_final[f"Hazard_Track_{i}"] = Hazard_Track_all[i]
-    df_final[f"Hazard_Name_{i}"] = Hazard_Track_name_all[i]
+    # df_final[f"Hazard_Name_{i}"] = Hazard_Track_name_all[i]
 
 df_final.to_csv("final.csv", index=False)
