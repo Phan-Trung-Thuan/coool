@@ -10,11 +10,11 @@ from collections import Counter
 annotations = pickle.load(open("/kaggle/input/coool-dataset/annotations_public.pkl", "rb"))
 
 # Task 1
-task1 = pickle.load(open("..\\baseline\\video_Driver_State_Changed.pkl", "rb"))
+task1 = pickle.load(open("video_Driver_State_Changed.pkl", "rb"))
 
 # Task 2
-task2_track = pickle.load(open("..\\baseline\\video_track_id.pkl", "rb"))
-task2_tree  = pickle.load(open("..\\baseline\\video_track_id_tree.pkl", "rb"))
+task2_track = pickle.load(open("video_track_id.pkl", "rb"))
+task2_tree  = pickle.load(open("video_track_id_tree.pkl", "rb"))
 
 # Task 3 (NEW)
 task3_caption = pickle.load(open("hazard_caption_by_id.pkl", "rb"))
